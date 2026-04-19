@@ -1,23 +1,23 @@
 name: BNF Daily Dashboard
- 
+
 on:
   schedule:
     # 23:30 UTC = 翌日 08:30 JST
     # 曜日 0=日曜〜4=木曜 → JSTの月〜金の朝
     - cron: '30 23 * * 0-4'
   workflow_dispatch:
- 
+
 # GitHub Pagesへのデプロイに必要な権限
 permissions:
   contents: read
   pages: write
   id-token: write
- 
+
 # 同時実行を防ぐ
 concurrency:
   group: "pages"
   cancel-in-progress: false
- 
+
 jobs:
   notify:
     runs-on: ubuntu-latest
@@ -25,22 +25,22 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
- 
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
- 
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
           cache: 'pip'
- 
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
- 
+
       - name: Run BNF notify
         env:
           TZ: Asia/Tokyo
@@ -48,15 +48,15 @@ jobs:
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
           GMAIL_TO: ${{ secrets.GMAIL_TO }}
         run: python bnf_notify.py
- 
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
- 
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./public
- 
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
